@@ -105,7 +105,7 @@
   systemctl   enable   --now  smsnotify
   ```
 
-## 刷入喉优化
+## 刷入后优化
 ### 1、关闭所有led灯
 ```shell
 echo 0 > /sys/class/leds/green:internet/brightness
