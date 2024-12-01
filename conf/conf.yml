@@ -1,0 +1,45 @@
+# 消息模板, 暂不支持自定义，等后续更新吧
+template: "验证码: %s\n收信人: %s\n\n短信原文:\n%s"
+# 消息示例：
+
+# 配置通知渠道
+notify:
+  # 通知渠道，必填！！！！！！！！！！！！！！！！！！！！！！！！！
+  # 可以配置的值为： qq 、webhook 和 mail
+  # 填写完成后请完善对应渠道的详细信息！！！
+  type: qq
+
+  webhook:
+    #url: "http://127.0.0.1:3000/send_private_msg?user_id=QQ号&message="
+    # wx的url,请在wxbot里面对消息内容进行urlcode解码操作
+    #url: "http://192.168.86.78:2802/api/sendMessage"
+    # 钉钉url示例
+    url: "https://oapi.dingtalk.com/robot/send?access_token=钉钉软件里面复制token"
+    # 请根据自己渠道配置请求类型， 钉钉为post
+    type: "post"
+    # 钉钉的payload, "1" 表示短信内容，
+    #payload: '{"msgtype": "text","text": {"content": "1"}}'
+    # 其他post请求的payload， 根据自己的请求配置
+    #payload: '{"message": "1", "to": "梅干菜小酥饼"}'
+
+
+  # 邮箱通知
+  mail:
+    account: "xx@qq.com"
+    password: "非邮箱登陆密码，请自行获取邮箱的凭证"
+    sendTo: "邮件接收人"
+
+    # qq邮箱的服务器信息
+    # 默认使用qq邮箱发送, 可自行替换其他邮箱
+    smtpHost: "smtp.qq.com"
+    smtpPort: 587
+
+# 转发配置，如需转发到其他程序做更多的消息处理则配置
+# 如果只需要消息转发则可以忽略此配置
+forwarder:
+  enable: false
+  # 配置其他程序接口地址
+  url: "http://127.0.0.1:802/forwarder?messages="
+  # 请求方式，get  post
+  type: "get"
+

@@ -6,107 +6,25 @@
 |CPU|MSM8916(高通410)|
 |RAM|385MiB|
 |ROM|3.82GiB|
+|购入价|4.4 (我是大冤种，我哭死)|
 
 
-## 1.0版本说明
-已实现功能：
-  * 接收短信
-
-  * 转发短信(不过目前仅支持get请求的url，举个栗子： cq-http)
-
-  * 获取验证码(规划中...)
-
-  * 清理短信(规划中...)
-
-  * 保存短信(规划中...)
-
-    ...
 
 ## 使用简介
 
-* 创建sms文件夹，当然不创建也行
+如果是刷的Archlinux，可以一键执行
 
-  ```shell
-  mkdir sms 
-  ```
+```shell
+pacman -S smsforwarder-beta-3-aarch64.pkg.tar.xz
+```
 
-* 复制文件到uz801刚刚创建的sms文件夹里面，这个自行发挥神通，能复制上去就行
-
-  ```shell
-  scp  smsforwarder  notify  root@棒子Ip地址:/root/sms/
-  ```
-
-
-* 运行notify
-
-  ```shell
-  cd  /root/sms/
-  ./notify
-  
-  # 如果提示无权限,执行下方操作
-  chmod 777 *
-  ```
-
-  运行后会成成配置文件
-
-  ```shell
-  [root@SIM-9898 smserver]# ./notify_beta 
-  未找到配置，已生成默认配置文件， 请编辑url后重新运行！！！
-  ```
-
-* 根据自己的转发渠道自行修改`conf.yml`文件
-
-* 修改完成后在运行两个文件
-
-* 最后为了方便实现开机自启：
-
-  输入`nano /usr/lib/systemd/system/smsforwarder.service`复制粘贴下方示例：
-
-  ```shell
-  [Unit]
-  Description=SMS Forwarder Service
-  After=network.target
-  
-  [Service]
-  ExecStart=/root/sms/smsforwarder
-  WorkingDirectory=/root/sms
-  User=root
-  Group=root
-  
-  [Install]
-  WantedBy=multi-user.target
-  ```
-
-  然后创建notfiy的开机自启
-
-  ```shell
-  nano /usr/lib/systemd/system/smsnotify.service
-  
-  # 粘贴
-  [Unit]
-  Description=SMS Forwarder Service
-  After=network.target
-  
-  [Service]
-  ExecStart=/root/sms/notify
-  WorkingDirectory=/root/sms
-  User=root
-  Group=root
-  
-  [Install]
-  WantedBy=multi-user.target
-  ```
-
-* 刷新单元文件并设置开机自启
-
-  ```shell
-  systemctl    daemon-reload 
-  systemctl   enable   --now  smsforwarder 
-  systemctl   enable   --now  smsnotify
-  ```
+写的比较垃圾，仅供学习。不要喷我行不行呀 好哥哥
 
 ## 刷入后优化
-### 1、关闭所有led灯
+### 1、关闭所有led灯 
+
+如果是Archlinux 安装后会自动关闭
+
 ```shell
 echo 0 > /sys/class/leds/green:internet/brightness
 echo 0 > /sys/class/leds/blue:wifi/brightness
@@ -115,5 +33,38 @@ echo 0 > /sys/class/leds/mmc0::/brightness
 
 
 
+## 版本说明
 
+已实现功能：
 
+* 接收短信
+
+* 转发短信
+
+  * qq
+  * wx
+  * mail
+  * 自定义的GET/POST 请求
+
+* 发送短信
+
+  * 端口 801
+  * 路径 /api/sendMessage
+  * GET参数
+    * number
+    * message
+
+* 获取验证码
+
+  * 端口 801
+  * 路径： /api/getMessage
+
+* 保存短信,暂时存在message.txt中
+
+* 清理短信(规划中...)
+
+  ...
+
+![img](README.assets/1.png)
+
+![img](README.assets/2.png)
