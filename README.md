@@ -48,7 +48,11 @@ LANG=zh_CN.UTF-8
 ```shell
 echo 'LANG=zh_CN.UTF-8' >/etc/locale.conf 
 ```
-
+然后执行一下
+```shell
+locale-gen
+```
+然后最好是重启一下
 ### 修改主机名
 ```shell
 hostnamectl set-hostname SIM-号码
