@@ -17,11 +17,19 @@
 ```shell
 pacman -S smsforwarder-beta-3-aarch64.pkg.tar.xz
 ```
+安装完成后进入/opt/smsforwarder进行配置
+```shell
+cd /opt/smsforwarder
+```
+编辑conf.yml,配置为自己的转发渠道。保存后直接重启棒子或者重启短信转发服务
+```shell
+systemctl restart smsforwarder
+```
 
 写的比较垃圾，仅供学习。不要喷我行不行呀 好哥哥
 
 ## 刷入后优化
-### 1、关闭所有led灯 
+### 1、关闭所有led灯, 已经集成到beta3版本里面了 
 
 如果是Archlinux 安装后会自动关闭
 
@@ -30,7 +38,30 @@ echo 0 > /sys/class/leds/green:internet/brightness
 echo 0 > /sys/class/leds/blue:wifi/brightness
 echo 0 > /sys/class/leds/mmc0::/brightness
 ```
+### 修改中文
+```shell
+nano  /etc/locale.conf
+# 将内容修改成下面的内容
+LANG=zh_CN.UTF-8
+```
+或者用echo 直接重定向，这个准备后续集成到软件包内
+```shell
+echo 'LANG=zh_CN.UTF-8' >/etc/locale.conf 
+```
 
+### 修改主机名
+```shell
+hostnamectl set-hostname SIM-号码
+
+# 替换hosts文件原有的主机名
+sed -i 's/UFI-Arch/SIM-号码/' /etc/hosts
+```
+
+###  修改密码
+将root密码修改为自己记得住的
+```shell
+passwd root
+```
 
 
 ## 版本说明
