@@ -17,7 +17,8 @@ var client = http.Client{}
 // 991378(登录随机码) ，感谢您使用中国联通APP【中国联通】               来源： wap.10010.com
 // 【芒果tv】338673（随机验证码），有效期10分钟。如非本人使用，敬请忽略本信息。
 func GetMessageCode(content string) string {
-	re := regexp.MustCompile(`码.*\d{4,6}\b|\d{4,6}\b.*码`)
+	//re := regexp.MustCompile(`码.*\d{4,6}\b|\d{4,6}\b.*码`)
+	re := regexp.MustCompile(`(.{0,11})[随机|验证|登录|授权|动态|校验]码(.{0,10})`)
 	match := re.FindAllString(content, -1)
 	if len(match) == 0 {
 		return "None"

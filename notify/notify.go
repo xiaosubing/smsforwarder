@@ -14,7 +14,6 @@ func Notify() {
 	tempMessage := conf.Smsforwarder.MessageTemplate
 	for v := range conf.Message {
 		text := strings.Split(v, "\n")
-		fmt.Println("开始转发短信: ", text[1])
 		code := utils.GetMessageCode(text[1])
 		number := "**" + string(text[0][9]) + string(text[0][10])
 		content = fmt.Sprintf(tempMessage, code, number, text[1])
@@ -24,20 +23,16 @@ func Notify() {
 			fmt.Println("处理过后的内容: ", content)
 		}
 
-		// forwarder
-		if conf.Smsforwarder.Forwarder.Enable == true {
-
-			return
-		}
+		//// forwarder
+		//if conf.Smsforwarder.Forwarder.Enable == true {
+		//
+		//	return
+		//}
 
 		// send
 		if strings.ToUpper(conf.Smsforwarder.Notify.NotifyType) == "QQ" {
 			sendQQMessage(content)
 		}
-
-		//if strings.ToUpper(conf.Smsforwarder.Notify.NotifyType) == "WX" {
-		//	sendWxMessage(content)
-		//}
 
 		if strings.ToUpper(conf.Smsforwarder.Notify.NotifyType) == "WEBHOOK" {
 			sendWebhookMessage(content)
@@ -48,7 +43,7 @@ func Notify() {
 			if len(code) == 0 {
 				subject = "短信转发"
 			} else {
-				subject = code
+				subject = fmt.Sprintf(conf.Smsforwarder.Notify.NotifyMailSubject, code)
 			}
 
 			sendMailMessage(subject, content)
@@ -56,13 +51,6 @@ func Notify() {
 	}
 
 }
-
-//func sendWxMessage(content string) {
-//	content = strings.Replace(content, "\n", "\\n", -1)
-//	payload := strings.Replace(conf.Smsforwarder.Notify.NotifyWebHookPayload, "1", url2.QueryEscape(content), -1)
-//	fmt.Println(payload)
-//	utils.HttpPost(conf.Smsforwarder.Notify.NotifyWebHookUrl, payload)
-//}
 
 func sendMailMessage(subject, content string) {
 	m := gomail.NewMessage()
@@ -89,7 +77,7 @@ func sendWebhookMessage(content string) {
 		url := fmt.Sprintf("%s%s", conf.Smsforwarder.Notify.NotifyWebHookUrl, content)
 		utils.HttpGet(url)
 	} else {
-		content = strings.Replace(content, "\n", "\\n", -1)
+		content = strings.Replace(strings.Replace(content, "\n", "\\n", -1), "\r", "", -1)
 		payload := strings.Replace(conf.Smsforwarder.Notify.NotifyWebHookPayload, "1", content, -1)
 		fmt.Println(payload)
 		utils.HttpPost(conf.Smsforwarder.Notify.NotifyWebHookUrl, payload)

@@ -13,7 +13,7 @@ var Message = make(chan string, 5)
 type smsforwarderSetting struct {
 	MessageTemplate string
 	Notify          *notify
-	Forwarder       *forwarder
+	//Forwarder       *forwarder
 }
 
 type notify struct {
@@ -27,16 +27,16 @@ type notify struct {
 	NotifyMailSendTo   string
 	NotifyMailSmtpHost string
 	NotifyMailSmtpPort int
-
+	NotifyMailSubject  string
 	// more notify ...
 
 }
 
-type forwarder struct {
-	Enable   bool
-	Url      string
-	HttpType string
-}
+//type forwarder struct {
+//	Enable   bool
+//	Url      string
+//	HttpType string
+//}
 
 func init() {
 	viper.SetConfigName("conf")
@@ -66,12 +66,13 @@ func NewSmsforwarder() *smsforwarderSetting {
 			NotifyMailSendTo:     viper.GetString("notify.mail.sendTo"),
 			NotifyMailSmtpHost:   viper.GetString("notify.mail.smtpHost"),
 			NotifyMailSmtpPort:   viper.GetInt("notify.mail.smtpPort"),
+			NotifyMailSubject:    viper.GetString("notify.mail.subject"),
 		},
-		Forwarder: &forwarder{
-			Enable:   viper.GetBool("forwarder.enable"),
-			Url:      viper.GetString("forwarder.url"),
-			HttpType: viper.GetString("forwarder.type"),
-		},
+		//Forwarder: &forwarder{
+		//	Enable:   viper.GetBool("forwarder.enable"),
+		//	Url:      viper.GetString("forwarder.url"),
+		//	HttpType: viper.GetString("forwarder.type"),
+		//},
 	}
 }
 func createConf() {
@@ -90,16 +91,16 @@ template: "验证码: %s\n收信人: %s\n\n短信原文:\n%s"
 # 配置通知渠道
 notify:
   # 通知渠道，必填！！！！！！！！！！！！！！！！！！！！！！！！！
-  # 可以配置的值为： qq 、webhook 和 mail
+  # 可以配置的值为： qq 、wx、webhook 和 mail
   # 填写完成后请完善对应渠道的详细信息！！！
   type: qq
 
   webhook:
-    #url: "http://127.0.0.1:3000/send_private_msg?user_id=QQ号&message="
+    #url: "http://127.0.0.1:3000/send_private_msg?user_id=3286276407&message="
     # wx的url,请在wxbot里面对消息内容进行urlcode解码操作
     #url: "http://192.168.86.78:2802/api/sendMessage"
     # 钉钉url示例
-    url: "https://oapi.dingtalk.com/robot/send?access_token=钉钉软件里面复制token"
+    #url: "https://oapi.dingtalk.com/robot/send?access_token=钉钉软件里面复制token"
     # 请根据自己渠道配置请求类型， 钉钉为post
     type: "post"
     # 钉钉的payload, "1" 表示短信内容，
@@ -110,24 +111,16 @@ notify:
 
   # 邮箱通知
   mail:
-    account: "xx@qq.com"
+    account: "3286276407@qq.com"
     password: "非邮箱登陆密码，请自行获取邮箱的凭证"
     sendTo: "邮件接收人"
-
+    # 邮件主题，%s表示主动识别的验证码
+    subject: "验证码: %s"
+    
     # qq邮箱的服务器信息
     # 默认使用qq邮箱发送, 可自行替换其他邮箱
     smtpHost: "smtp.qq.com"
     smtpPort: 587
-
-# 转发配置，如需转发到其他程序做更多的消息处理则配置
-# 如果只需要消息转发则可以忽略此配置
-forwarder:
-  enable: false
-  # 配置其他程序接口地址
-  url: "http://127.0.0.1:802/forwarder?messages="
-  # 请求方式，get  post
-  type: "get"
-
 
 `
 	write := bufio.NewWriter(file)

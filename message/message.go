@@ -2,12 +2,14 @@ package message
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"github.com/godbus/dbus/v5"
 	"net/http"
 	"os"
 	"smsforwarder/conf"
 	"smsforwarder/utils"
+	"strings"
 	"time"
 )
 
@@ -15,10 +17,20 @@ import (
 var (
 	c       = make(chan *dbus.Signal, 2)
 	conn, _ = dbus.SystemBus()
+	rule    = "type='signal',interface='org.freedesktop.ModemManager1.Modem.Messaging',member='Added'"
+	phone   []string
 )
 
+type Response struct {
+	Message string `json:"phone"`
+}
+
+func init() {
+	numberService := conn.Object("org.freedesktop.ModemManager1", dbus.ObjectPath("/org/freedesktop/ModemManager1/Modem/0"))
+	numberService.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Modem", "OwnNumbers").Store(&phone)
+}
+
 func ListenMessage() {
-	rule := "type='signal',interface='org.freedesktop.ModemManager1.Modem.Messaging',member='Added'"
 	call := conn.BusObject().Call("org.freedesktop.DBus.AddMatch", 0, rule)
 	if call.Err != nil {
 		fmt.Println("Failed to add match: %v", call.Err)
@@ -35,7 +47,6 @@ func ListenMessage() {
 			service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "Text").Store(&text)
 			if len(text) == 0 {
 				for i := 0; i <= 20; i++ {
-					fmt.Println("未获取到短信，重新获取......")
 					time.Sleep(1 * time.Second)
 					service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "Text").Store(&text)
 					if len(text) != 0 {
@@ -44,10 +55,7 @@ func ListenMessage() {
 				}
 			}
 			if text != tmp {
-				var number []string
-				numberService := conn.Object("org.freedesktop.ModemManager1", dbus.ObjectPath("/org/freedesktop/ModemManager1/Modem/0"))
-				numberService.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Modem", "OwnNumbers").Store(&number)
-				conf.Message <- fmt.Sprintf("%s\n%s", number[0][2:], text)
+				conf.Message <- fmt.Sprintf("%s\n%s", phone[0][2:], text)
 				saveMessage(text)
 				tmp = text
 			}
@@ -58,14 +66,13 @@ func ListenMessage() {
 
 }
 
-// sendMessage  2801
+// SendMessage :801
 func SendMessage(writer http.ResponseWriter, request *http.Request) {
 
 	query := request.URL.Query()
 	number := query.Get("number")
 	content := query.Get("message")
-	fmt.Println("获取到收信人号码: ", number)
-	fmt.Println("内容： ", content)
+
 	messagingObj := conn.Object("org.freedesktop.ModemManager1", dbus.ObjectPath("/org/freedesktop/ModemManager1/Modem/0"))
 	smsProps := map[string]dbus.Variant{
 		"number": dbus.MakeVariant(number),
@@ -86,7 +93,7 @@ func SendMessage(writer http.ResponseWriter, request *http.Request) {
 
 }
 
-// sendMessage  2801
+// GetMessage  801
 func GetMessage(writer http.ResponseWriter, request *http.Request) {
 	// 打开文件
 	file, err := os.Open("message.txt")
@@ -95,12 +102,11 @@ func GetMessage(writer http.ResponseWriter, request *http.Request) {
 	}
 	defer file.Close()
 
-	// 创建一个扫描器用于读取文件
 	scanner := bufio.NewScanner(file)
 
 	var lastLine string
 	for scanner.Scan() {
-		lastLine = scanner.Text() // 更新最后一行的内容
+		lastLine = scanner.Text()
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -117,20 +123,26 @@ func GetMessage(writer http.ResponseWriter, request *http.Request) {
 }
 
 func saveMessage(content string) {
-	// 打开文件，如果不存在则创建，设置为追加模式和写入模式
 	file, err := os.OpenFile("message.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	// 要写入的数据
 	data := []byte(content + "\n")
-
-	// 写入数据
 	_, err = file.Write(data)
 	if err != nil {
 		panic(err)
+	}
+
+}
+
+func GetInfo(writer http.ResponseWriter, request *http.Request) {
+	response := Response{
+		Message: strings.Join(phone, ""),
+	}
+	if err := json.NewEncoder(writer).Encode(response); err != nil {
+		http.Error(writer, err.Error(), http.StatusInternalServerError)
 	}
 
 }
