@@ -29,7 +29,7 @@ systemctl restart smsforwarder
 写的比较垃圾，仅供学习。不要喷我行不行呀 好哥哥
 
 ## 刷入后优化
-### 1、关闭所有led灯, 已经集成到beta3版本里面了 
+### 关闭所有led灯, 已经集成到beta3版本里面了 
 
 如果是Archlinux 安装后会自动关闭
 
@@ -66,6 +66,31 @@ sed -i 's/UFI-Arch/SIM-号码/' /etc/hosts
 ```shell
 passwd root
 ```
+
+### 安装python3
+
+默认没装python3, ansible无法统一管理
+
+```shell
+pacman -Syy 
+pacman -S python3 
+```
+
+### 空间清理
+
+本身的存储就不大，对于插卡棒子问题不大，对于管理端棒子来说可能有点紧张。
+
+```shell
+# 删除软件包缓存
+rm -rf /var/cache/pacman/*
+
+# 删除帮助手册
+rm -rf /usr/share/doc/*
+
+#  删除部分语言, 删除请确保以及将语言设置为中文
+rm -rf /usr/share/locale/[a-y]*
+```
+
 
 
 ## 版本说明
