@@ -1,0 +1,38 @@
+# Maintainer: Your Name <your.email@example.com>
+pkgname=smsforwarder
+pkgver=beta
+pkgrel=4
+pkgdesc="A simple SMS forwarding service"
+arch=('aarch64')
+url="https://qq3286276407/"
+license=()  
+depends=()  
+source=("smsforwarder" "smsforwarder.service" "conf.yml" "led" "led.service") 
+install=".install"
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP') 
+
+package() {
+    install -d "${pkgdir}/opt/${pkgname}"
+    cp "${srcdir}/${pkgname}" "${pkgdir}/opt/${pkgname}/"
+    cp "${srcdir}/conf.yml" "${pkgdir}/opt/${pkgname}/"
+    cp "${srcdir}/led" "${pkgdir}/opt/${pkgname}/"
+       
+    # 安装 systemd 服务文件
+    install -Dm644 "${srcdir}/${pkgname}.service" "${pkgdir}/usr/lib/systemd/system/${pkgname}.service"
+    install -Dm644 "${srcdir}/led.service" "${pkgdir}/usr/lib/systemd/system/led.service"
+}
+
+
+post_install() {
+    chmod +x /opt/smsforwarder/*
+    systemctl enable  --now smsforwarder.service
+    systemctl enable  --now led.service
+}
+
+post_remove() {
+    systemctl stop --now led
+    systemctl stop --now smsforwarder
+    rm -rf /opt/smsforwarder
+    rm -rf /usr/lib/systemd/system/smsforwarder.service
+    rm -rf /usr/lib/systemd/system/led.service
+}

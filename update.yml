@@ -1,0 +1,33 @@
+---
+- name: 更新smsforwarder版本
+  hosts: all
+  tasks:
+    - name: 备份配置
+      shell: cp -a /opt/smsforwarder/conf.yml /opt/
+
+    - name: 上传文件
+      copy: 
+        src: /home/alarm/smsforwarder/smsforwarder-beta-4-aarch64.pkg.tar.xz
+        dest: /tmp/
+
+    - name: 更新软件
+      community.general.pacman:
+        name: /tmp/smsforwarder-beta-4-aarch64.pkg.tar.xz
+        state: latest
+        update_cache: true
+
+    - name: 查看当前版本
+      shell: pacman -Q | grep smsfor
+      register: smsVer
+
+    - name: 
+      debug:
+        msg: "{{ smsVer.stdout }}"
+    
+    - name: 删除文件
+      shell: rm -rf /tmp/smsfor*
+
+    - name: 备份配置
+      shell: cp -a /opt/conf.yml  /opt/smsforwarder/conf.yml 
+
+
