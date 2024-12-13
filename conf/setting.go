@@ -13,7 +13,6 @@ var Message = make(chan string, 5)
 type smsforwarderSetting struct {
 	MessageTemplate string
 	Notify          *notify
-	//Forwarder       *forwarder
 }
 
 type notify struct {
@@ -31,12 +30,6 @@ type notify struct {
 	// more notify ...
 
 }
-
-//type forwarder struct {
-//	Enable   bool
-//	Url      string
-//	HttpType string
-//}
 
 func init() {
 	viper.SetConfigName("conf")
@@ -68,11 +61,6 @@ func NewSmsforwarder() *smsforwarderSetting {
 			NotifyMailSmtpPort:   viper.GetInt("notify.mail.smtpPort"),
 			NotifyMailSubject:    viper.GetString("notify.mail.subject"),
 		},
-		//Forwarder: &forwarder{
-		//	Enable:   viper.GetBool("forwarder.enable"),
-		//	Url:      viper.GetString("forwarder.url"),
-		//	HttpType: viper.GetString("forwarder.type"),
-		//},
 	}
 }
 func createConf() {

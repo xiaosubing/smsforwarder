@@ -23,12 +23,6 @@ func Notify() {
 			fmt.Println("处理过后的内容: ", content)
 		}
 
-		//// forwarder
-		//if conf.Smsforwarder.Forwarder.Enable == true {
-		//
-		//	return
-		//}
-
 		// send
 		if strings.ToUpper(conf.Smsforwarder.Notify.NotifyType) == "QQ" {
 			sendQQMessage(content)
@@ -40,7 +34,7 @@ func Notify() {
 
 		if strings.ToUpper(conf.Smsforwarder.Notify.NotifyType) == "MAIL" {
 			var subject string
-			if len(code) == 0 {
+			if code == "None" {
 				subject = "短信转发"
 			} else {
 				subject = fmt.Sprintf(conf.Smsforwarder.Notify.NotifyMailSubject, code)
