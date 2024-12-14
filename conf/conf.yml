@@ -1,24 +1,20 @@
 # 消息模板, 暂不支持自定义，等后续更新吧
 template: "验证码: %s\n收信人: %s\n\n短信原文:\n%s"
-# 消息示例：
 
 # 配置通知渠道
 notify:
   # 通知渠道，必填！！！！！！！！！！！！！！！！！！！！！！！！！
   # 可以配置的值为： qq 、wx、webhook 和 mail
   # 填写完成后请完善对应渠道的详细信息！！！
-  type: qq
+  type: mail
 
   webhook:
-    #url: "http://127.0.0.1:3000/send_private_msg?user_id=3286276407&message="
-    # wx的url,请在wxbot里面对消息内容进行urlcode解码操作
-    #url: "http://192.168.86.78:2802/api/sendMessage"
     # 钉钉url示例
-    #url: "https://oapi.dingtalk.com/robot/send?access_token=钉钉软件里面复制token"
+    url: "https://oapi.dingtalk.com/robot/send?access_token=钉钉软件里面复制token"
     # 请根据自己渠道配置请求类型， 钉钉为post
     type: "post"
     # 钉钉的payload, "1" 表示短信内容，
-    #payload: '{"msgtype": "text","text": {"content": "1"}}'
+    payload: '{"msgtype": "text","text": {"content": "1"}}'
     # 其他post请求的payload， 根据自己的请求配置
     #payload: '{"message": "1", "to": "梅干菜小酥饼"}'
 
@@ -27,7 +23,7 @@ notify:
   mail:
     account: "3286276407@qq.com"
     password: "非邮箱登陆密码，请自行获取邮箱的凭证"
-    sendTo: "邮件接收人"
+    sendTo: "建议使用运营商邮箱为收件人，打开短信提醒，能够自动识别验证码"
     # 邮件主题，%s表示主动识别的验证码
     subject: "验证码: %s"
 
