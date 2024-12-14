@@ -23,8 +23,9 @@ func Notify() {
 			// 有验证码的发到邮箱，非验证码发送到其他渠道(也可以是邮箱)
 			if len(conf.Smsforwarder.Notify.NotifySecType) != 0 {
 				forwarderMoreType("None", strings.ToUpper(conf.Smsforwarder.Notify.NotifySecType), content)
+				return
 			}
-			return
+
 		}
 
 		forwarderMoreType(code, strings.ToUpper(conf.Smsforwarder.Notify.NotifyType), content)
