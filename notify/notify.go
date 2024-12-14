@@ -20,30 +20,37 @@ func Notify() {
 
 		if code == "None" {
 			content = strings.Replace(content, "验证码: None\n", "", -1)
-			fmt.Println("处理过后的内容: ", content)
-		}
-
-		// send
-		if strings.ToUpper(conf.Smsforwarder.Notify.NotifyType) == "QQ" {
-			sendQQMessage(content)
-		}
-
-		if strings.ToUpper(conf.Smsforwarder.Notify.NotifyType) == "WEBHOOK" {
-			sendWebhookMessage(content)
-		}
-
-		if strings.ToUpper(conf.Smsforwarder.Notify.NotifyType) == "MAIL" {
-			var subject string
-			if code == "None" {
-				subject = "短信转发"
-			} else {
-				subject = fmt.Sprintf(conf.Smsforwarder.Notify.NotifyMailSubject, code)
+			// 有验证码的发到邮箱，非验证码发送到其他渠道(也可以是邮箱)
+			if len(conf.Smsforwarder.Notify.NotifySecType) != 0 {
+				forwarderMoreType("None", strings.ToUpper(conf.Smsforwarder.Notify.NotifySecType), content)
 			}
-
-			sendMailMessage(subject, content)
+			return
 		}
+
+		forwarderMoreType(code, strings.ToUpper(conf.Smsforwarder.Notify.NotifyType), content)
 	}
 
+}
+
+func forwarderMoreType(code, forwarderType, content string) {
+	// send
+	if forwarderType == "QQ" {
+		sendQQMessage(content)
+	}
+
+	if forwarderType == "WEBHOOK" {
+		sendWebhookMessage(content)
+	}
+
+	if forwarderType == "MAIL" {
+		var subject string
+		if code == "None" {
+			subject = "短信转发"
+		} else {
+			subject = fmt.Sprintf(conf.Smsforwarder.Notify.NotifyMailSubject, code)
+		}
+		sendMailMessage(subject, content)
+	}
 }
 
 func sendMailMessage(subject, content string) {

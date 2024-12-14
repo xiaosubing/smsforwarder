@@ -17,6 +17,7 @@ type smsforwarderSetting struct {
 
 type notify struct {
 	NotifyType           string
+	NotifySecType        string
 	NotifyWebHookUrl     string
 	NotifyWebHookType    string
 	NotifyWebHookPayload string
@@ -47,10 +48,12 @@ func init() {
 }
 
 func NewSmsforwarder() *smsforwarderSetting {
+
 	return &smsforwarderSetting{
 		MessageTemplate: viper.GetString("template"),
 		Notify: &notify{
 			NotifyType:           viper.GetString("notify.type"),
+			NotifySecType:        viper.GetString("notify.type2"),
 			NotifyWebHookUrl:     viper.GetString("notify.webhook.url"),
 			NotifyWebHookType:    viper.GetString("notify.webhook.type"),
 			NotifyWebHookPayload: viper.GetString("notify.webhook.payload"),

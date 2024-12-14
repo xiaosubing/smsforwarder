@@ -7,6 +7,7 @@ notify:
   # 可以配置的值为： qq 、wx、webhook 和 mail
   # 填写完成后请完善对应渠道的详细信息！！！
   type: mail
+  type2: webhook
 
   webhook:
     # 钉钉url示例
@@ -31,3 +32,4 @@ notify:
     # 默认使用qq邮箱发送, 可自行替换其他邮箱
     smtpHost: "smtp.qq.com"
     smtpPort: 587
+
