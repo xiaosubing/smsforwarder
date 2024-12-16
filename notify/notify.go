@@ -9,52 +9,61 @@ import (
 	"strings"
 )
 
-func Notify() {
-	var content string
-	tempMessage := conf.Smsforwarder.MessageTemplate
-	for v := range conf.Message {
-		text := strings.Split(v, "\n")
-		code := utils.GetMessageCode(text[1])
-		number := "**" + string(text[0][9]) + string(text[0][10])
-		content = fmt.Sprintf(tempMessage, code, number, text[1])
+// vars
+var content string
+var code string
+var text []string
 
+func Notify() {
+	for v := range conf.Message {
+		text = strings.Split(v, "\n")
+		code = utils.GetMessageCode(text[1])
+		number := "**" + string(text[0][9]) + string(text[0][10])
 		if code == "None" {
-			content = strings.Replace(content, "验证码: None\n", "", -1)
-			// 有验证码的发到邮箱，非验证码发送到其他渠道(也可以是邮箱)
-			if len(conf.Smsforwarder.Notify.NotifySecType) != 0 {
-				forwarderMoreType("None", strings.ToUpper(conf.Smsforwarder.Notify.NotifySecType), content)
-				return
+			content = fmt.Sprintf(strings.Replace(conf.Smsforwarder.MessageTemplate, "验证码: %s", "", -1), code, number, text[1])
+		} else {
+			content = fmt.Sprintf(conf.Smsforwarder.MessageTemplate, code, number, text[1])
+		}
+		fmt.Printf("短信原文\n: %s\n", text[1])
+
+		// send
+		for _, v1 := range conf.Smsforwarder.Notify.NotifyType {
+			moreType := strings.ToUpper(v1)
+			if moreType == "QQ" {
+				sendQQMessage()
 			}
 
-		}
+			if moreType == "WEBHOOK" {
+				sendWebhookMessage()
+			}
 
-		forwarderMoreType(code, strings.ToUpper(conf.Smsforwarder.Notify.NotifyType), content)
+			if moreType == "MAIL" {
+				sendMailMessage()
+			}
+		}
 	}
 
 }
 
-func forwarderMoreType(code, forwarderType, content string) {
-	// send
-	if forwarderType == "QQ" {
-		sendQQMessage(content)
-	}
-
-	if forwarderType == "WEBHOOK" {
-		sendWebhookMessage(content)
-	}
-
-	if forwarderType == "MAIL" {
-		var subject string
+func sendMailMessage() {
+	// subject
+	var subject string
+	tmp := conf.Smsforwarder.Notify.NotifyMailSubject
+	subject = strings.Replace(strings.Replace(tmp, "1", "%s", -1), "2", "%s", -1)
+	if strings.Contains(tmp, "1") && strings.Contains(tmp, "2") {
+		subject = fmt.Sprintf(subject, "", content)
+	} else if strings.Contains(tmp, "1") {
 		if code == "None" {
-			subject = "短信转发"
-		} else {
-			subject = fmt.Sprintf(conf.Smsforwarder.Notify.NotifyMailSubject, code)
+			subject = "None"
+			return
 		}
-		sendMailMessage(subject, content)
+		subject = fmt.Sprintf(subject, code)
+	} else if strings.Contains(tmp, "2") {
+		subject = fmt.Sprintf(subject, content)
+	} else {
+		subject = "短信转发"
 	}
-}
 
-func sendMailMessage(subject, content string) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", conf.Smsforwarder.Notify.NotifyMailAccount)
 	m.SetHeader("To", conf.Smsforwarder.Notify.NotifyMailSendTo)
@@ -74,20 +83,19 @@ func sendMailMessage(subject, content string) {
 	}
 }
 
-func sendWebhookMessage(content string) {
+func sendWebhookMessage() {
 	if strings.ToUpper(conf.Smsforwarder.Notify.NotifyWebHookType) == "GET" {
 		url := fmt.Sprintf("%s%s", conf.Smsforwarder.Notify.NotifyWebHookUrl, content)
 		utils.HttpGet(url)
 	} else {
 		content = strings.Replace(strings.Replace(content, "\n", "\\n", -1), "\r", "", -1)
 		payload := strings.Replace(conf.Smsforwarder.Notify.NotifyWebHookPayload, "1", content, -1)
-		fmt.Println(payload)
 		utils.HttpPost(conf.Smsforwarder.Notify.NotifyWebHookUrl, payload)
 	}
 
 }
 
-func sendQQMessage(content string) {
+func sendQQMessage() {
 	url := fmt.Sprintf("%s%s", conf.Smsforwarder.Notify.NotifyWebHookUrl, url2.QueryEscape(content))
 	utils.HttpGet(url)
 }

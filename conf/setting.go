@@ -16,8 +16,7 @@ type smsforwarderSetting struct {
 }
 
 type notify struct {
-	NotifyType           string
-	NotifySecType        string
+	NotifyType           []string
 	NotifyWebHookUrl     string
 	NotifyWebHookType    string
 	NotifyWebHookPayload string
@@ -52,8 +51,7 @@ func NewSmsforwarder() *smsforwarderSetting {
 	return &smsforwarderSetting{
 		MessageTemplate: viper.GetString("template"),
 		Notify: &notify{
-			NotifyType:           viper.GetString("notify.type"),
-			NotifySecType:        viper.GetString("notify.type2"),
+			NotifyType:           viper.GetStringSlice("notify.type"),
 			NotifyWebHookUrl:     viper.GetString("notify.webhook.url"),
 			NotifyWebHookType:    viper.GetString("notify.webhook.type"),
 			NotifyWebHookPayload: viper.GetString("notify.webhook.payload"),
@@ -83,7 +81,11 @@ notify:
   # 通知渠道，必填！！！！！！！！！！！！！！！！！！！！！！！！！
   # 可以配置的值为： qq 、wx、webhook 和 mail
   # 填写完成后请完善对应渠道的详细信息！！！
-  type: mail
+  type:
+    - mail
+    # 多渠道支持
+    #- qq
+    #- webhook
 
   webhook:
     # 钉钉url示例
@@ -108,6 +110,8 @@ notify:
     # 默认使用qq邮箱发送, 可自行替换其他邮箱
     smtpHost: "smtp.qq.com"
     smtpPort: 587
+
+
 `
 	write := bufio.NewWriter(file)
 	_, err = write.WriteString(s)
