@@ -73,13 +73,14 @@ func createConf() {
 	defer file.Close()
 
 	s := `
-# 消息模板, 暂不支持自定义，等后续更新吧
-template: "验证码: %s\n收信人: %s\n\n短信原文:\n%s"
+# 消息模板
+# 1 需要验证码 2需要收信人手机号最后两位 3 短信原文， 顺序不能乱！
+template: "\n验证码: 1\n收信人: 2\n\n短信原文:\n3"
 
 # 配置通知渠道
 notify:
   # 通知渠道，必填！！！！！！！！！！！！！！！！！！！！！！！！！
-  # 可以配置的值为： qq 、wx、webhook 和 mail
+  # 可以配置的值为： qq 、webhook 和 mail
   # 填写完成后请完善对应渠道的详细信息！！！
   type:
     - mail
@@ -104,14 +105,15 @@ notify:
     password: "非邮箱登陆密码，请自行获取邮箱的凭证"
     sendTo: "建议使用运营商邮箱为收件人，打开短信提醒，能够自动识别验证码"
     # 邮件主题，%s表示主动识别的验证码
-    subject: "验证码: %s"
+    # 沃邮箱建议使用 "2"
+    subject: "2"
+    # 其他邮箱可以把程序内自动识别的验证码加上，但是识别有可能不准哦
+    # subject: "验证码：1"
 
     # qq邮箱的服务器信息
     # 默认使用qq邮箱发送, 可自行替换其他邮箱
     smtpHost: "smtp.qq.com"
     smtpPort: 587
-
-
 `
 	write := bufio.NewWriter(file)
 	_, err = write.WriteString(s)
