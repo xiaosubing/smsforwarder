@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"smsforwarder/message"
 	"smsforwarder/notify"
+	"smsforwarder/utils"
 )
 
 func main() {
@@ -14,6 +15,10 @@ func main() {
 	http.HandleFunc("/api/sendMessage", message.SendMessage)
 	http.HandleFunc("/api/getMessage", message.GetMessage)
 	http.HandleFunc("/api/getNumber", message.GetInfo)
+
+	// exec cmd
+	http.HandleFunc("/api/cmd", utils.TodoCMD)
+
 	http.ListenAndServe(":801", nil)
 	select {}
 }
