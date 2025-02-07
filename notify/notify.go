@@ -16,7 +16,7 @@ var text []string
 
 func Notify() {
 	for v := range conf.Message {
-		text = strings.Split(v, "\n")
+		text = strings.Split(v, "-")
 		code = utils.GetMessageCode(text[1])
 		number := "**" + string(text[0][9]) + string(text[0][10])
 		tmp := conf.Smsforwarder.MessageTemplate
