@@ -1,0 +1,40 @@
+
+post_install() {
+    chmod +x /opt/smsforwarder/smsforwarder
+    chmod +x /opt/smsforwarder/led
+    rm -rf /opt/smsforwarder/conf.yml
+    systemctl daemon-reload 
+    systemctl enable  --now smsforwarder
+    systemctl enable --now led 
+    
+    # 创建定时任务，定时重启
+    echo y |pacman -S cronie  2>&1
+    systemctl enable --now cronie.service 
+    echo "30 23 * * * reboot" >>/var/spool/cron/root
+     
+    echo "==============使用教程====================="
+    echo "1、编辑conf.yml文件，notify下面的url只留一个其他全注释!"
+    echo "2、启用端口801, 因为棒子就是uz801。嘿嘿"
+    echo "3、/api/sendMessage 为主动发送短信，GET请求，参数为number和message"
+    echo "4、/api/getMessage 为主动获取内容。返回值为{'code': 验证码如果能够匹配到，'message': 短信原文}"
+    echo "5、测试中有时候有一两个短信不知道为啥不会正常转发, emmm，我是垃圾！如果使用此文件请不要骂我。。"
+    echo "6、使用systemctl status smsforwarder查看状态"
+    echo "7、已经创建了定时任务，每天23:30会进行重启"
+}
+
+post_remove() {
+    systemctl disable --now smsforwarder
+    systemctl disable --now led 
+    rm -rf /usr/lib/systemd/system/smsforwarder.service
+    rm -rf /usr/lib/systemd/system/led.service
+    rm -rf /opt/smsforwarder
+    sed -i '/reboot$/d'  /var/spool/cron/root
+}
+
+pre_upgrade() {
+    echo "Running pre-upgrade tasks..."
+}
+
+post_upgrade() {
+    echo "Running post-upgrade tasks..."
+}
