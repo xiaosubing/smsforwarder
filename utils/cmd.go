@@ -1,54 +1,47 @@
 package utils
 
 import (
-	"fmt"
-	"io"
-	"log"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"os/exec"
 )
 
-func TodoCMD(writer http.ResponseWriter, request *http.Request) {
-	query := request.URL.Query()
-	cmd := query.Get("cmd")
-	fmt.Println("接收到执行命令: ", cmd)
-	res := todoCMD(cmd)
-	_, err := writer.Write([]byte(res))
-	if err != nil {
+func TodoCMD(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "只支持 POST 请求", http.StatusMethodNotAllowed)
 		return
 	}
+
+	var command struct {
+		Command string `json:"command"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&command)
+	if err != nil {
+		http.Error(w, "failed: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	output, err := executeShellCommand(command.Command)
+	if err != nil {
+		http.Error(w, "exec failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]string{
+		"output": string(output),
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
-func todoCMD(command string) string {
-	cmd := exec.Command("bash", "-c", command)
+func executeShellCommand(cmd string) ([]byte, error) {
+	command := exec.Command("sh", "-c", cmd)
+	var out bytes.Buffer
+	command.Stdout = &out
+	command.Stderr = &out
 
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = cmd.Start(); err != nil {
-		log.Fatal(err)
-	}
-
-	output, err := io.ReadAll(stdout)
-	if err != nil {
-		log.Fatal(err)
-	}
-	errOutput, err := io.ReadAll(stderr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err = cmd.Wait(); err != nil {
-		log.Fatal(err)
-	}
-	if len(errOutput) > 0 {
-		fmt.Println(string(errOutput))
-		return "exec failed"
-	}
-	return string(output)
+	err := command.Run()
+	return out.Bytes(), err
 }
