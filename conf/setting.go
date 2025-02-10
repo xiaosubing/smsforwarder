@@ -28,7 +28,6 @@ type notify struct {
 	NotifyMailSmtpPort int
 	NotifyMailSubject  string
 	// more notify ...
-
 }
 
 func init() {
@@ -75,7 +74,7 @@ func createConf() {
 	s := `
 # 消息模板
 # 1 需要验证码 2需要收信人手机号最后两位 3 短信原文， 顺序不能乱！
-template: "\n验证码: 1\n收信人: 2\n\n短信原文:\n3"
+template: "\n验证码: [验证码]\n收信人: [收信人]\n\n短信原文:\n[短信原文]"
 
 # 配置通知渠道
 notify:
@@ -83,18 +82,42 @@ notify:
   # 可以配置的值为： qq 、webhook 和 mail
   # 填写完成后请完善对应渠道的详细信息！！！
   type:
-    - mail
+    - webhook
     # 多渠道支持
     #- qq
-    #- webhook
+
 
   webhook:
-    # 钉钉url示例
-    url: "https://oapi.dingtalk.com/robot/send?access_token=钉钉软件里面复制token"
-    # 请根据自己渠道配置请求类型， 钉钉为post
+    url: "https://send-notifyme.521933.xyz"
     type: "post"
+    payload: '{
+      "data": {
+        "to": "请输入你的token",
+        "ttl": 86400,
+        "priority": "normal",
+        "pushType": "FCM_Push",
+        "data": {
+          "title": "[验证码]",
+          "body": "[短信原文]",
+          "group": "Messages",
+          "bigText": false,
+          "iconType": 0,
+          "smallIcon":"smallIcon_0",
+          "largeIcon":"largeIcon_0",
+          "id":"0",
+          "encryption":false,
+          "iv":"UkAjUPykxX1Eu4h7",
+          "invisible":false,
+          "actionType":"0",
+          "action":"",
+          "channel":"quicker_channel",
+          "record":1
+        }
+      }
+    }'
+
     # 钉钉的payload, "1" 表示短信内容，
-    payload: '{"msgtype": "text","text": {"content": "1"}}'
+    #payload: '{"msgtype": "text","text": {"content": "1"}}'
     # 其他post请求的payload， 根据自己的请求配置
     #payload: '{"message": "1", "to": "梅干菜小酥饼"}'
 
@@ -104,9 +127,8 @@ notify:
     account: "3286276407@qq.com"
     password: "非邮箱登陆密码，请自行获取邮箱的凭证"
     sendTo: "建议使用运营商邮箱为收件人，打开短信提醒，能够自动识别验证码"
-    # 邮件主题，%s表示主动识别的验证码
-    # 沃邮箱建议使用 "2"
-    subject: "2"
+
+    subject: "[验证码]"
     # 其他邮箱可以把程序内自动识别的验证码加上，但是识别有可能不准哦
     # subject: "验证码：1"
 
@@ -114,6 +136,8 @@ notify:
     # 默认使用qq邮箱发送, 可自行替换其他邮箱
     smtpHost: "smtp.qq.com"
     smtpPort: 587
+
+
 `
 	write := bufio.NewWriter(file)
 	_, err = write.WriteString(s)
