@@ -73,7 +73,7 @@ func createConf() {
 
 	s := `
 # 消息模板
-# 1 需要验证码 2需要收信人手机号最后两位 3 短信原文， 顺序不能乱！
+# [验证码] 需要验证码 [收信人]需要收信人手机号最后两位 [短信原文] 短信原文， 顺序不能乱！
 template: "\n验证码: [验证码]\n收信人: [收信人]\n\n短信原文:\n[短信原文]"
 
 # 配置通知渠道
@@ -81,9 +81,9 @@ notify:
   # 通知渠道，必填！！！！！！！！！！！！！！！！！！！！！！！！！
   # 可以配置的值为： qq 、webhook 和 mail
   # 填写完成后请完善对应渠道的详细信息！！！
+  # 支持多渠道消息通知
   type:
     - webhook
-    # 多渠道支持
     #- qq
 
 
@@ -116,10 +116,10 @@ notify:
       }
     }'
 
-    # 钉钉的payload, "1" 表示短信内容，
-    #payload: '{"msgtype": "text","text": {"content": "1"}}'
+    # 钉钉的payload, "[短信原文]" 表示短信内容，"[验证码]" 主动识别到的验证码，有可能有误识别，请注意！
+    #payload: '{"msgtype": "text","text": {"content": "[短信原文]"}}'
     # 其他post请求的payload， 根据自己的请求配置
-    #payload: '{"message": "1", "to": "梅干菜小酥饼"}'
+    #payload: '{"message": "[短信原文]", "to": "梅干菜小酥饼"}'
 
 
   # 邮箱通知
@@ -136,7 +136,6 @@ notify:
     # 默认使用qq邮箱发送, 可自行替换其他邮箱
     smtpHost: "smtp.qq.com"
     smtpPort: 587
-
 
 `
 	write := bufio.NewWriter(file)

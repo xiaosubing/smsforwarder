@@ -7,9 +7,9 @@ notify:
   # 通知渠道，必填！！！！！！！！！！！！！！！！！！！！！！！！！
   # 可以配置的值为： qq 、webhook 和 mail
   # 填写完成后请完善对应渠道的详细信息！！！
+  # 支持多渠道消息通知
   type:
     - webhook
-    # 多渠道支持
     #- qq
 
 
@@ -42,10 +42,10 @@ notify:
       }
     }'
 
-    # 钉钉的payload, "1" 表示短信内容，
-    #payload: '{"msgtype": "text","text": {"content": "1"}}'
+    # 钉钉的payload, "[短信原文]" 表示短信内容，"[验证码]" 主动识别到的验证码，有可能有误识别，请注意！
+    #payload: '{"msgtype": "text","text": {"content": "[短信原文]"}}'
     # 其他post请求的payload， 根据自己的请求配置
-    #payload: '{"message": "1", "to": "梅干菜小酥饼"}'
+    #payload: '{"message": "[短信原文]", "to": "梅干菜小酥饼"}'
 
 
   # 邮箱通知
