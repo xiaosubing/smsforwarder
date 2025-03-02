@@ -55,11 +55,10 @@ func ListenMessage() {
 				}
 			}
 			if text != tmp {
-				conf.Message <- fmt.Sprintf("%s-%s", phone[0][2:], text)
+				conf.Message <- fmt.Sprintf("%s---%s", phone[0][2:], text)
 				saveMessage(text)
 				tmp = text
 			}
-
 		}
 
 	}
