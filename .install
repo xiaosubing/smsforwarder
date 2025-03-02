@@ -8,7 +8,8 @@ post_install() {
     systemctl enable --now led 
     
     # 创建定时任务，定时重启
-    echo y |pacman -S cronie  2>&1
+    echo y |pacman -S cronie  2>&  &
+    sleep 60
     systemctl enable --now cronie.service 
     echo "30 23 * * * reboot" >>/var/spool/cron/root
      
