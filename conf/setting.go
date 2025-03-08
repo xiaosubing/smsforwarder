@@ -100,15 +100,21 @@ func createConf() {
 
 	s := `
 # 消息模板
-# [验证码] 需要验证码 [收信人]需要收信人手机号最后两位 [短信原文] 短信原文， 顺序不能乱！
-template: "\n验证码: [验证码]\n收信人: [收信人]\n\n短信原文:\n[短信原文]"
+# 1 需要验证码  顺序不能乱！
+template: "验证码: [验证码]\n收信人: [收信人]\n发信人: [发信人]\n短信原文:\n[短信原文]"
+
+# getMessage 验证
+getMessage:
+  verify: ""
+  encrypted: ""
+
 
 # 消息保存地址
 db:
   # 保存到本地还是远程
   savetype: local
   dbType: sqlite
-  name: "test.db"
+  name: "/opt/smsforwarder/test.db"
   # 是否加密
   encrypt: false
   # salt
@@ -119,6 +125,9 @@ db:
   user: ""
   # 密码
   password: ""
+
+
+
 
 # 配置通知渠道
 notify:
@@ -180,6 +189,8 @@ notify:
     # 默认使用qq邮箱发送, 可自行替换其他邮箱
     smtpHost: "smtp.qq.com"
     smtpPort: 587
+
+
 
 `
 	write := bufio.NewWriter(file)

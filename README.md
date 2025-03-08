@@ -11,22 +11,74 @@
 
 
 ## 使用简介
+### 修改配置文件
+第一次执行会生成`conf.yml`文件，需要修改的地方：
+* notify 通知渠道，这个根据自己的通知的渠道修改
+  * 支持的通知渠道
+    * 邮箱
+    * qq/wx  机器人容易封！请慎重
+    * 自定义的get/post请求， 比如钉钉、FCM、华为推送、bark等。。
+  * 支持多渠道通知，不过消息多感觉会很烦，通知渠道不好判断是否正常，只能同时发
 
-如果是刷的Archlinux，可以一键执行
+* 短信保存地址，目前只用sqlite3数据库，方便其他程序代码获取验证码， 这个默认也行
 
+### smsforwarder.service文件建议配置
 ```shell
-pacman -S smsforwarder-beta-3-aarch64.pkg.tar.xz
+ExecStartPre=/bin/sleep 10
+# 服务挂后重新拉起
+Restart=on-failure
 ```
-安装完成后进入/opt/smsforwarder进行配置
+
+##  交叉编译
+* 安装aarch64-linux-gnu-gcc
 ```shell
-cd /opt/smsforwarder
+apt install gcc-aarch64-linux-gnu 
 ```
-编辑conf.yml,配置为自己的转发渠道。保存后直接重启棒子或者重启短信转发服务
+* 编译
 ```shell
-systemctl restart smsforwarder
+export CC=aarch64-linux-gnu-gcc
+export CGO_ENABLED=1
+export GOOS=linux
+export GOARCH=arm64
 ```
+
+## 版本说明
+
+已实现功能：
+
+* 接收短信
+* 转发短信
+  * qq
+  * wx
+  * mail
+  * 自定义的GET/POST 请求
+* 发送短信
+  * 端口 801
+  * 路径 /api/sendMessage
+  * GET参数
+    * number
+    * message
+    ![img](README.assets/3.png)
+
+* 获取验证码
+  * 端口 801
+  * 路径： /api/getMessage
+  * GET参数
+    * phone
+    * verify(验证字符串，可忽略)
+    ![img](README.assets/4.png)
+* 保存短信,sqlite3
+* 清理短信(规划中...)
+  ...
+
+
+
 
 写的比较垃圾，仅供学习。不要喷我行不行呀 好哥哥
+
+
+
+
 
 ## 刷入后优化
 ### 关闭所有led灯, 已经集成到beta3版本里面了 
@@ -78,7 +130,7 @@ pacman -S python3
 
 ### 空间清理
 
-本身的存储就不大，对于插卡棒子问题不大，对于管理端棒子来说可能有点紧张。
+本身的存储就不大，可以多点空间出来
 
 ```shell
 # 删除软件包缓存
@@ -93,38 +145,4 @@ rm -rf /usr/share/locale/[a-y]*
 
 
 
-## 版本说明
 
-已实现功能：
-
-* 接收短信
-
-* 转发短信
-
-  * qq
-  * wx
-  * mail
-  * 自定义的GET/POST 请求
-
-* 发送短信
-
-  * 端口 801
-  * 路径 /api/sendMessage
-  * GET参数
-    * number
-    * message
-
-* 获取验证码
-
-  * 端口 801
-  * 路径： /api/getMessage
-
-* 保存短信,暂时存在message.txt中
-
-* 清理短信(规划中...)
-
-  ...
-
-![img](README.assets/1.png)
-
-![img](README.assets/2.png)
