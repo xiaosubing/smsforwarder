@@ -12,9 +12,20 @@ var Message = make(chan string, 5)
 
 type smsforwarderSetting struct {
 	MessageTemplate string
+	Db              *saveMessage
 	Notify          *notify
 }
 
+type saveMessage struct {
+	SaveType    string
+	DbType      string
+	DbName      string
+	Encrypt     bool
+	EncryptSalt string
+	DbUser      string
+	DbPassword  string
+	DbHost      string
+}
 type notify struct {
 	NotifyType           []string
 	NotifyWebHookUrl     string
@@ -49,6 +60,17 @@ func NewSmsforwarder() *smsforwarderSetting {
 
 	return &smsforwarderSetting{
 		MessageTemplate: viper.GetString("template"),
+		Db: &saveMessage{
+			SaveType:    viper.GetString("db.savetype"),
+			DbType:      viper.GetString("db.dbtype"),
+			DbName:      viper.GetString("db.name"),
+			Encrypt:     viper.GetBool("db.encrypt"),
+			EncryptSalt: viper.GetString("db.encryptSalt"),
+			DbUser:      viper.GetString("db.user"),
+			DbPassword:  viper.GetString("db.password"),
+			DbHost:      viper.GetString("db.host"),
+		},
+
 		Notify: &notify{
 			NotifyType:           viper.GetStringSlice("notify.type"),
 			NotifyWebHookUrl:     viper.GetString("notify.webhook.url"),

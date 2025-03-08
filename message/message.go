@@ -43,12 +43,14 @@ func ListenMessage() {
 	for v := range c {
 		if v.Body[1] == true {
 			var text string
+			var sender string
 			service := conn.Object("org.freedesktop.ModemManager1", dbus.ObjectPath(fmt.Sprintf("%s", v.Body[0])))
 			service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "Text").Store(&text)
 			if len(text) == 0 {
 				for i := 0; i <= 20; i++ {
 					time.Sleep(1 * time.Second)
 					service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "Text").Store(&text)
+					service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "number").Store(&sender)
 					if len(text) != 0 {
 						break
 					}
@@ -56,7 +58,7 @@ func ListenMessage() {
 			}
 			if text != tmp {
 				conf.Message <- fmt.Sprintf("%s---%s", phone[0][2:], text)
-				saveMessage(text)
+				saveMessage(phone[0][2:], text, sender)
 				tmp = text
 			}
 		}
@@ -121,14 +123,17 @@ func GetMessage(writer http.ResponseWriter, request *http.Request) {
 
 }
 
-func saveMessage(content string) {
+func saveMessage(phone, text string, sender string) {
+	// 写入数据库
+	utils.InsertData(phone, text, sender)
+	fmt.Println("开始写入本地文件")
 	file, err := os.OpenFile("message.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	data := []byte(content + "\n")
+	data := []byte(text + "\n")
 	_, err = file.Write(data)
 	if err != nil {
 		panic(err)
