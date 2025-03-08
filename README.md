@@ -68,6 +68,12 @@ export GOARCH=arm64
     * verify(验证字符串，可忽略)
     ![img](README.assets/4.png)
 * 保存短信,sqlite3
+* 执行shell命令
+  * 端口 801
+  * 路径： /api/cmd
+  * GET参数
+    * command
+    ![img](README.assets/1.png)
 * 清理短信(规划中...)
   ...
 
