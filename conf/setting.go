@@ -11,9 +11,12 @@ var Smsforwarder *smsforwarderSetting
 var Message = make(chan string, 5)
 
 type smsforwarderSetting struct {
-	MessageTemplate string
-	Db              *saveMessage
-	Notify          *notify
+	MessageTemplate  string
+	PhoneNumber      []string
+	GetMessageVerify string
+	GetEncryptPhone  string
+	Db               *saveMessage
+	Notify           *notify
 }
 
 type saveMessage struct {
@@ -59,7 +62,9 @@ func init() {
 func NewSmsforwarder() *smsforwarderSetting {
 
 	return &smsforwarderSetting{
-		MessageTemplate: viper.GetString("template"),
+		MessageTemplate:  viper.GetString("template"),
+		GetMessageVerify: viper.GetString("getMessage.verify"),
+
 		Db: &saveMessage{
 			SaveType:    viper.GetString("db.savetype"),
 			DbType:      viper.GetString("db.dbtype"),
@@ -97,6 +102,23 @@ func createConf() {
 # 消息模板
 # [验证码] 需要验证码 [收信人]需要收信人手机号最后两位 [短信原文] 短信原文， 顺序不能乱！
 template: "\n验证码: [验证码]\n收信人: [收信人]\n\n短信原文:\n[短信原文]"
+
+# 消息保存地址
+db:
+  # 保存到本地还是远程
+  savetype: local
+  dbType: sqlite
+  name: "test.db"
+  # 是否加密
+  encrypt: false
+  # salt
+  encryptSalt: "梅干菜小酥饼"
+  # 远程地址
+  host: ""
+  # 用户名
+  user: ""
+  # 密码
+  password: ""
 
 # 配置通知渠道
 notify:

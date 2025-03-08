@@ -13,27 +13,28 @@ import (
 var content string
 var code string
 var text []string
+var sender string
 
 func Notify() {
 	for v := range conf.Message {
 		text = strings.Split(v, "---")
-		code = utils.GetMessageCode(text[1])
 		number := "**" + string(text[0][9]) + string(text[0][10])
+		code = text[3]
+		sender = text[2]
+
 		tmp := conf.Smsforwarder.MessageTemplate
-		// 根据模板替换
-		templates := strings.Replace(strings.Replace(strings.Replace(tmp, "[验证码]", "%s", -1), "[收信人]", "%s", -1), "[短信原文]", "%s", -1)
-
-		if strings.Contains(tmp, "[验证码]") && strings.Contains(tmp, "[收信人]") && strings.Contains(tmp, "[短信原文]") {
-			content = fmt.Sprintf(templates, code, number, text[1])
-		} else if strings.Contains(tmp, "[收信人]") && strings.Contains(tmp, "[短信原文]") {
-			content = fmt.Sprintf(templates, number, text[1])
-		} else if strings.Contains(tmp, "[验证码]") && strings.Contains(tmp, "[短信原文]") {
-			content = fmt.Sprintf(templates, code, text[1])
-		} else {
-			content = text[1]
+		if strings.Contains(tmp, "[验证码]") {
+			content = strings.Replace(tmp, "[验证码]", code, -1)
 		}
-
-		fmt.Printf("短信原文: %s\n", text[1])
+		if strings.Contains(content, "[收信人]") {
+			content = strings.Replace(content, "[收信人]", number, -1)
+		}
+		if strings.Contains(tmp, "[发信人]") {
+			content = strings.Replace(content, "[发信人]", sender, -1)
+		}
+		if strings.Contains(tmp, "[短信原文]") {
+			content = strings.Replace(content, "[短信原文]", text[1], -1)
+		}
 
 		// send
 		for _, v1 := range conf.Smsforwarder.Notify.NotifyType {
@@ -60,14 +61,19 @@ func sendMailMessage() {
 	tmp := conf.Smsforwarder.Notify.NotifyMailSubject
 
 	// 根据模板替换
-	subject = strings.Replace(strings.Replace(tmp, "1", "%s", -1), "2", "%s", -1)
-	if strings.Contains(tmp, "1") && strings.Contains(tmp, "2") {
-		subject = fmt.Sprintf(subject, "", content)
-	} else if strings.Contains(tmp, "1") {
-		subject = fmt.Sprintf(subject, code)
-	} else if strings.Contains(tmp, "2") {
-		subject = fmt.Sprintf(subject, content)
-	} else {
+
+	if strings.Contains(tmp, "[验证码]") {
+		subject = strings.Replace(tmp, "[验证码]", code, -1)
+	}
+
+	if strings.Contains(tmp, "[发信人]") {
+		subject = strings.Replace(subject, "[发信人]", sender, -1)
+	}
+	if strings.Contains(tmp, "[短信原文]") {
+		subject = strings.Replace(subject, "[短信原文]", text[1], -1)
+	}
+
+	if subject == "" {
 		subject = "短信转发"
 	}
 

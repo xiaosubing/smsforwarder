@@ -1,6 +1,11 @@
 # 消息模板
 # 1 需要验证码  顺序不能乱！
-template: "\n验证码: [验证码]\n收信人: [收信人]\n\n短信原文:\n[短信原文]"
+template: "\n验证码: [验证码]\n收信人: [收信人]\n发信人: [发信人]\n短信原文:\n[短信原文]"
+
+# getMessage 验证
+getMessage:
+  verify: ""
+  encrypted: ""
 
 
 # 消息保存地址

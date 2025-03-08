@@ -1,15 +1,12 @@
 package message
 
 import (
-	"bufio"
-	"encoding/json"
 	"fmt"
 	"github.com/godbus/dbus/v5"
 	"net/http"
 	"os"
 	"smsforwarder/conf"
 	"smsforwarder/utils"
-	"strings"
 	"time"
 )
 
@@ -18,7 +15,6 @@ var (
 	c       = make(chan *dbus.Signal, 2)
 	conn, _ = dbus.SystemBus()
 	rule    = "type='signal',interface='org.freedesktop.ModemManager1.Modem.Messaging',member='Added'"
-	phone   []string
 )
 
 type Response struct {
@@ -27,7 +23,8 @@ type Response struct {
 
 func init() {
 	numberService := conn.Object("org.freedesktop.ModemManager1", dbus.ObjectPath("/org/freedesktop/ModemManager1/Modem/0"))
-	numberService.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Modem", "OwnNumbers").Store(&phone)
+	numberService.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Modem", "OwnNumbers").Store(&conf.Smsforwarder.PhoneNumber)
+
 }
 
 func ListenMessage() {
@@ -46,20 +43,24 @@ func ListenMessage() {
 			var sender string
 			service := conn.Object("org.freedesktop.ModemManager1", dbus.ObjectPath(fmt.Sprintf("%s", v.Body[0])))
 			service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "Text").Store(&text)
+			service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "Number").Store(&sender)
 			if len(text) == 0 {
 				for i := 0; i <= 20; i++ {
 					time.Sleep(1 * time.Second)
 					service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "Text").Store(&text)
-					service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "number").Store(&sender)
+					service.Call("org.freedesktop.DBus.Properties.Get", 0, "org.freedesktop.ModemManager1.Sms", "Number").Store(&sender)
 					if len(text) != 0 {
 						break
 					}
 				}
 			}
+
 			if text != tmp {
-				conf.Message <- fmt.Sprintf("%s---%s", phone[0][2:], text)
-				saveMessage(phone[0][2:], text, sender)
+				code := utils.GetMessageCode(text)
+				conf.Message <- fmt.Sprintf("%s---%s---%s---%s", conf.Smsforwarder.PhoneNumber[0][2:], text, sender, code)
+				saveMessage(text, sender, code)
 				tmp = text
+				fmt.Println("获取到的消息：", text)
 			}
 		}
 
@@ -94,59 +95,8 @@ func SendMessage(writer http.ResponseWriter, request *http.Request) {
 
 }
 
-// GetMessage  801
-func GetMessage(writer http.ResponseWriter, request *http.Request) {
-	// 打开文件
-	file, err := os.Open("message.txt")
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
-	var lastLine string
-	for scanner.Scan() {
-		lastLine = scanner.Text()
-	}
-
-	if err := scanner.Err(); err != nil {
-		panic(err)
-	}
-	code := utils.GetMessageCode(lastLine)
-
-	if code == "None" {
-		writer.Write([]byte(fmt.Sprintf(`{"message": "%s" }`, lastLine)))
-	} else {
-		writer.Write([]byte(fmt.Sprintf(`{"code":"%s", "message": "%s" }`, code, lastLine)))
-	}
-
-}
-
-func saveMessage(phone, text string, sender string) {
-	// 写入数据库
-	utils.InsertData(phone, text, sender)
-	fmt.Println("开始写入本地文件")
-	file, err := os.OpenFile("message.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	data := []byte(text + "\n")
-	_, err = file.Write(data)
-	if err != nil {
-		panic(err)
-	}
-
-}
-
-func GetInfo(writer http.ResponseWriter, request *http.Request) {
-	response := Response{
-		Message: strings.Join(phone, ""),
-	}
-	if err := json.NewEncoder(writer).Encode(response); err != nil {
-		http.Error(writer, err.Error(), http.StatusInternalServerError)
-	}
+func saveMessage(text, sender, code string) {
+	// 是否加密，等更新...
+	utils.InsertData(conf.Smsforwarder.PhoneNumber[0][2:], text, sender, code)
 
 }

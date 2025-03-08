@@ -69,3 +69,13 @@ func httpClient(req *http.Request) string {
 	bodyText, _ := io.ReadAll(resp.Body)
 	return string(bodyText)
 }
+
+//func GetInfo(writer http.ResponseWriter, request *http.Request) {
+//	response := Response{
+//		Message: strings.Join(phone, ""),
+//	}
+//	if err := json.NewEncoder(writer).Encode(response); err != nil {
+//		http.Error(writer, err.Error(), http.StatusInternalServerError)
+//	}
+//
+//}
